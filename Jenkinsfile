@@ -12,8 +12,7 @@ pipeline {
         stage('Code Linting') {
             steps {
                 sh '''
-                    pip3 install flake8 --quiet
-                    flake8 app.py --max-line-length=120 --statistics
+                    python3 -m flake8 app.py --max-line-length=120 --statistics
                     echo 'Linting passed successfully.'
                 '''
             }
