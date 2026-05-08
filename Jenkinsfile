@@ -30,7 +30,7 @@ pipeline {
         stage('Containerized Deployment') {
             steps {
                 sh '''
-                    docker compose -f ${COMPOSE_FILE} down --remove-orphans || true
+                    docker compose -f ${COMPOSE_FILE} down --remove-orphans --volumes || true
                     docker compose -f ${COMPOSE_FILE} up -d
                     sleep 20
                     docker compose -f ${COMPOSE_FILE} ps
