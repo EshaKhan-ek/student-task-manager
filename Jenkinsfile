@@ -46,7 +46,7 @@ pipeline {
                     docker run --rm \
                         --network student-task-manager-pipeline_app-net \
                         -e APP_URL=http://web:5000 \
-                        ${SELENIUM_IMG}:latest
+                        selenium-tests:latest
                     echo 'Selenium tests passed.'
                 '''
             }
