@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
-import mysql.connector, os
+import mysql.connector
+import os
 
 app = Flask(__name__)
+
 
 def get_db():
     return mysql.connector.connect(
@@ -10,6 +12,7 @@ def get_db():
         password=os.environ.get('DB_PASSWORD', 'rootpass'),
         database=os.environ.get('DB_NAME', 'taskdb')
     )
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -25,6 +28,7 @@ def index():
     conn.close()
     return render_template('index.html', tasks=tasks)
 
+
 @app.route('/delete/<int:task_id>')
 def delete(task_id):
     conn = get_db()
@@ -33,6 +37,7 @@ def delete(task_id):
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
