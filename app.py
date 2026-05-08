@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import os
 
+
 app = Flask(__name__)
 
 
@@ -38,6 +39,7 @@ def delete(task_id):
     conn.close()
     return redirect(url_for('index'))
 
+
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
@@ -49,6 +51,7 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
 
 if __name__ == '__main__':
     init_db()
