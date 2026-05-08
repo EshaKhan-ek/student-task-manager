@@ -1,10 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import os
-
+import time
 
 app = Flask(__name__)
-
 
 def get_db():
     return mysql.connector.connect(
@@ -14,6 +13,28 @@ def get_db():
         database=os.environ.get('DB_NAME', 'taskdb')
     )
 
+def init_db():
+    for attempt in range(10):
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS tasks (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL
+                )
+            ''')
+            conn.commit()
+            conn.close()
+            print("DB initialized successfully.")
+            return
+        except Exception as e:
+            print(f"DB not ready (attempt {attempt + 1}/10): {e}")
+            time.sleep(3)
+    raise RuntimeError("Could not connect to database after 10 attempts.")
+
+# Initialize DB when the module loads (works with both direct run and Docker CMD)
+init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -23,12 +44,12 @@ def index():
         task = request.form['task']
         cursor.execute('INSERT INTO tasks (title) VALUES (%s)', (task,))
         conn.commit()
+        conn.close()
         return redirect(url_for('index'))
     cursor.execute('SELECT * FROM tasks')
     tasks = cursor.fetchall()
     conn.close()
     return render_template('index.html', tasks=tasks)
-
 
 @app.route('/delete/<int:task_id>')
 def delete(task_id):
@@ -39,20 +60,5 @@ def delete(task_id):
     conn.close()
     return redirect(url_for('index'))
 
-
-def init_db():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            title VARCHAR(255) NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
