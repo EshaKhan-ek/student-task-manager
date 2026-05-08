@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
 import os
+import time
 
 app = Flask(__name__)
 
@@ -39,19 +40,27 @@ def delete(task_id):
     return redirect(url_for('index'))
 
 
-def init_db():                         # ← 2 blank lines before
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            title VARCHAR(255) NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
+def init_db():
+    for attempt in range(10):
+        try:
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS tasks (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL
+                )
+            ''')
+            conn.commit()
+            conn.close()
+            print("Database initialized.")
+            return
+        except Exception as e:
+            print(f"DB not ready (attempt {attempt + 1}/10): {e}")
+            time.sleep(3)
+    raise RuntimeError("Could not connect to database after 10 attempts.")
 
 
-if __name__ == '__main__':             # ← 2 blank lines before (fixes E305)
+if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
