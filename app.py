@@ -38,6 +38,18 @@ def delete(task_id):
     conn.close()
     return redirect(url_for('index'))
 
+def init_db():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 if __name__ == '__main__':
+    init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
